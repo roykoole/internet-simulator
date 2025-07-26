@@ -2,25 +2,31 @@
 
 set -e
 
-echo "[−] Stopping dnsmasq..."
-pkill -f dnsmasq || true
+echo "[+] Stopping dnsmasq service..."
+pkill -f dnsmasq || echo "[!] dnsmasq not running."
 
-echo "[−] Removing iptables rules..."
-iptables -F
-iptables -t nat -F
+echo "[+] Removing dnsmasq configuration..."
+rm -f /etc/dnsmasq.d/testnet.conf
+rm -f /etc/local.d/dnsmasq-dhcp.start
 
-echo "[−] Disabling IP forwarding..."
+echo "[+] Flushing IP addresses from interfaces..."
+for iface in eth1 eth2 eth3; do
+  ip addr flush dev $iface || echo "[!] Failed to flush $iface."
+  ip link set $iface down || echo "[!] Failed to bring $iface down."
+done
+
+echo "[+] Disabling IP forwarding..."
 sysctl -w net.ipv4.ip_forward=0
 echo 0 > /proc/sys/net/ipv4/ip_forward
 
-echo "[−] Flushing IP addresses from test interfaces..."
-for IFACE in eth1 eth2 eth3; do
-  ip addr flush dev $IFACE || true
-  ip link set $IFACE down || true
-done
+echo "[+] Clearing iptables rules..."
+iptables -t nat -F
+iptables -F
 
-echo "[−] Removing ipstart autostart script..."
+echo "[+] Removing ip.sh auto-run configuration..."
 rm -f /etc/local.d/ipstart
-rc-update del local default || true
 
-echo "[−] Cleanup complete."
+echo "[+] Removing cleanup.sh itself (optional)..."
+rm -f /root/cleanup.sh
+
+echo "[✓] Cleanup complete. System is restored to its original state."
