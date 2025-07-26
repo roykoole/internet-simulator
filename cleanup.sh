@@ -29,4 +29,6 @@ rm -f /etc/local.d/ipstart
 echo "[+] Removing cleanup.sh itself (optional)..."
 rm -f /root/cleanup.sh
 
-echo "[✓] Cleanup complete. System is restored to its original state."
+echo "[✓] Cleanup complete. System is restored to its original state. Rebooting in 10 seconds..."
+sleep 10
+reboot
