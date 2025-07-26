@@ -44,27 +44,6 @@ fi
 echo "[+] Killing any running dnsmasq instance..."
 pkill -f dnsmasq || true
 
-echo "[+] Creating temporary dnsmasq config..."
-DNSMASQ_CONF="/tmp/dnsmasq_testnet.conf"
-cat > "$DNSMASQ_CONF" <<EOF
-interface=eth1
-dhcp-range=192.0.2.100,192.0.2.200,12h
-
-interface=eth2
-dhcp-range=198.51.100.100,198.51.100.200,12h
-
-interface=eth3
-dhcp-range=203.0.113.100,203.0.113.200,12h
-
-bind-interfaces
-log-dhcp
-EOF
-
-echo "[+] Starting dnsmasq with custom config..."
-dnsmasq --conf-file="$DNSMASQ_CONF"
-
-echo "[✓] Setup complete. DHCP running on eth1, eth2, eth3."
-
 echo "[+] Enabling IP forwarding..."
 sysctl -w net.ipv4.ip_forward=1
 sh -c 'echo 1 > /proc/sys/net/ipv4/ip_forward'
