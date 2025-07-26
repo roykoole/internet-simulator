@@ -86,10 +86,9 @@ Each interface will act as a mini-subnet with its own pool:
 If you need to undo everything, run:
 
 ```sh
-wget https://raw.githubusercontent.com/roykoole/internet-simulator/main/cleanup.sh
-chmod +x cleanup.sh
-./cleanup.sh
+wget -O - https://raw.githubusercontent.com/roykoole/internet-simulator/main/cleanup.sh | sh
 ```
+
 
 This will:
 - Stop DHCP
