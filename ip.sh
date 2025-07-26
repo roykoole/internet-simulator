@@ -75,9 +75,11 @@ iptables -A FORWARD -i eth3 -o eth2 -j ACCEPT
 echo "[+] NAT Gateway for TEST-NETs is now active."
 
 
-echo "[+] Starting dnsmasq DHCP server..."
+echo "[+] Writing persistent dnsmasq DHCP configuration to /etc/dnsmasq.d/testnet.conf..."
 
-cat <<EOF > /tmp/dnsmasq-testnet.conf
+mkdir -p /etc/dnsmasq.d
+
+cat <<EOF > /etc/dnsmasq.d/testnet.conf
 interface=eth1
 interface=eth2
 interface=eth3
@@ -90,6 +92,18 @@ dhcp-range=203.0.113.100,203.0.113.200,12h
 log-dhcp
 EOF
 
-dnsmasq --conf-file=/tmp/dnsmasq-testnet.conf
+echo "[+] Starting dnsmasq using persistent configuration..."
+dnsmasq --conf-file=/etc/dnsmasq.d/testnet.conf
 
 echo "[✓] Setup complete. DHCP running on eth1, eth2, eth3."
+
+# Optional: create a boot-time local service to start dnsmasq
+echo "[+] Installing startup script for dnsmasq..."
+
+cat <<EOF > /etc/local.d/dnsmasq-dhcp.start
+#!/bin/sh
+dnsmasq --conf-file=/etc/dnsmasq.d/testnet.conf
+EOF
+
+chmod +x /etc/local.d/dnsmasq-dhcp.start
+rc-update add local
