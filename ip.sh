@@ -89,6 +89,7 @@ bogus-priv
 dhcp-range=192.0.2.100,192.0.2.200,12h
 dhcp-range=198.51.100.100,198.51.100.200,12h
 dhcp-range=203.0.113.100,203.0.113.200,12h
+dhcp-option=option:dns-server,1.1.1.1
 log-dhcp
 EOF
 
