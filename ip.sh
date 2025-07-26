@@ -64,3 +64,53 @@ echo "[+] Starting dnsmasq with custom config..."
 dnsmasq --conf-file="$DNSMASQ_CONF"
 
 echo "[✓] Setup complete. DHCP running on eth1, eth2, eth3."
+
+echo "[+] Enabling IP forwarding..."
+sysctl -w net.ipv4.ip_forward=1
+sh -c 'echo 1 > /proc/sys/net/ipv4/ip_forward'
+
+echo "[+] Setting up iptables NAT rules..."
+iptables -t nat -F
+iptables -F
+
+# Masquerade all outbound traffic through WAN_IFACE
+iptables -t nat -A POSTROUTING -o $WAN_IFACE -j MASQUERADE
+
+# Set FORWARD rules for each TESTNET interface
+for entry in "${TESTNETS[@]}"; do
+  IFACE=$(echo $entry | cut -d ' ' -f1)
+  iptables -A FORWARD -i $IFACE -o $WAN_IFACE -j ACCEPT
+  iptables -A FORWARD -i $WAN_IFACE -o $IFACE -m state --state RELATED,ESTABLISHED -j ACCEPT
+done
+
+# Inter-TEST-NET routing
+iptables -A FORWARD -i eth1 -o eth2 -j ACCEPT
+iptables -A FORWARD -i eth2 -o eth1 -j ACCEPT
+
+iptables -A FORWARD -i eth1 -o eth3 -j ACCEPT
+iptables -A FORWARD -i eth3 -o eth1 -j ACCEPT
+
+iptables -A FORWARD -i eth2 -o eth3 -j ACCEPT
+iptables -A FORWARD -i eth3 -o eth2 -j ACCEPT
+
+echo "[+] NAT Gateway for TEST-NETs is now active."
+
+
+echo "[+] Starting dnsmasq DHCP server..."
+
+cat <<EOF > /tmp/dnsmasq-testnet.conf
+interface=eth1
+interface=eth2
+interface=eth3
+bind-interfaces
+domain-needed
+bogus-priv
+dhcp-range=192.0.2.100,192.0.2.200,12h
+dhcp-range=198.51.100.100,198.51.100.200,12h
+dhcp-range=203.0.113.100,203.0.113.200,12h
+log-dhcp
+EOF
+
+dnsmasq --conf-file=/tmp/dnsmasq-testnet.conf
+
+echo "[✓] Setup complete. DHCP running on eth1, eth2, eth3."
