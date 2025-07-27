@@ -14,8 +14,8 @@ echo "[+] Running ip.sh..."
 bash /root/ip.sh
 
 echo "[+] Setting up ip.sh to auto-run at boot..."
-cp /root/ip.sh /etc/local.d/ipstart
-chmod +x /etc/local.d/ipstart
+cp /root/ip.sh /etc/local.d/ip.start
+chmod +x /etc/local.d/ip.start
 rc-update add local default
 
 echo "[✓] Setup complete. Rebooting in 10 seconds..."
