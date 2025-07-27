@@ -57,6 +57,10 @@ iptables -A FORWARD -i eth3 -o eth1 -j ACCEPT
 iptables -A FORWARD -i eth2 -o eth3 -j ACCEPT
 iptables -A FORWARD -i eth3 -o eth2 -j ACCEPT
 
+iptables -A FORWARD -i eth0 -o eth1 -j ACCEPT
+iptables -A FORWARD -i eth0 -o eth2 -j ACCEPT
+iptables -A FORWARD -i eth0 -o eth3 -j ACCEPT
+
 echo "[+] NAT Gateway for TEST-NETs is now active."
 
 
