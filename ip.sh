@@ -23,29 +23,6 @@ done
 
 echo "[+] Enabling IP forwarding..."
 sysctl -w net.ipv4.ip_forward=1
-echo 1 > /proc/sys/net/ipv4/ip_forward
-
-echo "[+] Setting up iptables NAT rules..."
-iptables -t nat -F
-iptables -F
-iptables -t nat -A POSTROUTING -o $WAN_IFACE -j MASQUERADE
-
-for entry in "${TESTNETS[@]}"; do
-  IFACE=$(echo $entry | cut -d ' ' -f1)
-  iptables -A FORWARD -i $IFACE -o $WAN_IFACE -j ACCEPT
-  iptables -A FORWARD -i $WAN_IFACE -o $IFACE -j ACCEPT
-done
-
-echo "[+] Installing dnsmasq if not already installed..."
-if ! command -v dnsmasq >/dev/null 2>&1; then
-  apk update && apk add --no-cache dnsmasq
-fi
-
-echo "[+] Killing any running dnsmasq instance..."
-pkill -f dnsmasq || true
-
-echo "[+] Enabling IP forwarding..."
-sysctl -w net.ipv4.ip_forward=1
 sh -c 'echo 1 > /proc/sys/net/ipv4/ip_forward'
 
 echo "[+] Setting up iptables NAT rules..."
@@ -61,6 +38,14 @@ for entry in "${TESTNETS[@]}"; do
   iptables -A FORWARD -i $IFACE -o $WAN_IFACE -j ACCEPT
   iptables -A FORWARD -i $WAN_IFACE -o $IFACE -m state --state RELATED,ESTABLISHED -j ACCEPT
 done
+
+echo "[+] Installing dnsmasq if not already installed..."
+if ! command -v dnsmasq >/dev/null 2>&1; then
+  apk update && apk add --no-cache dnsmasq
+fi
+
+echo "[+] Killing any running dnsmasq instance..."
+pkill -f dnsmasq || true
 
 # Inter-TEST-NET routing
 iptables -A FORWARD -i eth1 -o eth2 -j ACCEPT
